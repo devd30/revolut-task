@@ -1,0 +1,21 @@
+   +-----------------+          +-----------------+          +-------------------+
+   |                 |          |                 |          |                   |
+   |  HTTP clients   |          |   Ingress       |          |  Kubernetes pods  |
+   |                 +---------->   controller   +---------->                   |
+   |                 |  HTTPS   |                 |   HTTP   |                   |
+   +-----------------+          +-----------------+          +-------------------+
+                                   /           \
+                         +-----------------+  +-----------------+
+                         |                 |  |                 |
+                         |  Redis database |  | CloudWatch logs |
+                         |                 |  |                 |
+                         +-----------------+  +-----------------+
+
+
+
+
+The HTTP clients send requests to an Ingress controller, which acts as a reverse proxy and routes the requests to the appropriate Kubernetes pod running the Flask application. The pods are launched as part of a Kubernetes deployment, which defines the desired state of the application and can scale up or down the number of replicas based on the workload.
+
+The Redis database and CloudWatch logs can be external services accessed by the Kubernetes pods through Kubernetes services or environment variables.  The CloudWatch logs can be streamed to the AWS CloudWatch service for monitoring and analysis.
+
+Overall, deploying on EKS offers benefits such as scalability, availability, and resilience through Kubernetes features like auto-scaling, rolling updates, and self-healing. However, it also requires additional setup and maintenance compared to running the application on EC2 instances.

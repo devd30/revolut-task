@@ -1,0 +1,77 @@
+# Deployment file (deployment.yaml)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+  labels:
+    app: revolut-task
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: revolut-task
+  template:
+    metadata:
+      labels:
+        app: revolut-task
+    spec:
+      containers:
+      - name: revolut-custom-image
+        image: my-registry/hello-world:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REDIS_HOST
+          value: redis-master
+        - name: REDIS_PORT
+          value: "6379"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 60
+---
+# Service file (service.yaml)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: revolut-task-service
+spec:
+  selector:
+    app: revolut-task
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+# Ingress (ingress-flas-app.service.yaml)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: revolut-task-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: revolut-task.com
+    http:
+      paths:
+      - path: /hello
+        pathType: Prefix
+        backend:
+          service:
+            name: revolut-task-service
+            port:
+              name: http
